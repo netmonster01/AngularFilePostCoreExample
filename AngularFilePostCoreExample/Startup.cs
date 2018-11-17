@@ -1,17 +1,17 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AngularFilePostCoreExample.Converters;
+using AngularFilePostCoreExample.Data;
+using AngularFilePostCoreExample.Interfaces;
+using AngularFilePostCoreExample.Models;
+using AngularFilePostCoreExample.ViewModels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
-using System;
-using System.Text;
 
 namespace AngularFilePostCoreExample
 {
@@ -27,6 +27,20 @@ namespace AngularFilePostCoreExample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            // add our custom converter.services.AddScoped<IConverter<Vote, VoteDto>, VoteConverter>();
+            services.AddScoped<IConverter<RegisterUserViewModel, ApplicationUser>, ApplicationUserConverter>();
+            services.AddScoped<IConverter<UserViewModel, ApplicationUser>, UserConverter>();
+            // set up database
+            services.AddDbContext<ApplicationDbContext>(options =>
+                            options.UseSqlite(Configuration.GetConnectionString("IdentityConnection")), ServiceLifetime.Transient);
+
+            // add custom identity
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultUI()
+            .AddDefaultTokenProviders();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // In production, the Angular files will be served from this directory
@@ -38,7 +52,7 @@ namespace AngularFilePostCoreExample
             // swagger
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Cavitt.net", Version = "v1" });
+                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
             });
         }
 
@@ -54,7 +68,7 @@ namespace AngularFilePostCoreExample
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
+            app.UseAuthentication();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();

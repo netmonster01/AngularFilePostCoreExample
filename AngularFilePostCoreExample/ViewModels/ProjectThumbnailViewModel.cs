@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AngularFilePostCoreExample.Models
+namespace AngularFilePostCoreExample.ViewModels
 {
-    public class ProjectThumbnail
+    public class ProjectThumbnailViewModel
     {
         public int ProjectId { get; set; }
-        public byte[] AvatarImage { get; set; }
+        public IFormFile AvatarImage { get; set; }
     }
 }

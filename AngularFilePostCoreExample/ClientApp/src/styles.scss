@@ -1,1 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.css";
+/*@import "~font-awesome/css/font-awesome.css";*/
+
+
+$font-stack: Roboto, Helvetica, sans-serif;
+$primary-color: #00BDF3;
+$primary-color-light: #aaa;
+$primary-text: #FFFFFF;
+$primary-text-dark: #000000;
+$error-text: #bd2130;
+
+$log-error: #bd2130;
+$log-info: #369;
+$log-pass: #2fd132;
+$log-warn: #f36d33;
+$log-debug: #929090;
+
+$primary-background: #303030;
+$primary-light-background: #929090;
+$primary-border-color: #ffffff;
