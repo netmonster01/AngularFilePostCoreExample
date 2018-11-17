@@ -21,7 +21,7 @@
         <td>{{ user.firstName}}</td>
         <td>{{ user.lastName }}</td>
         <td>{{ user.email }}</td>
-        <td><div *ngFor="let role of user.roles;">{{role}}</div></td>
+        <td><div *ngFor="let role of user.roles;">{{ role }}</div></td>
         <td><img [src]="user.avatarImage" /></td>
       </tr>
     </tbody>

@@ -19,11 +19,20 @@ namespace AngularFilePostCoreExample.Data
         {
         }
 
+        public DbSet<Log> Logs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-           
+            // enum to string.
+            EnumToStringConverter<LogType> logTypeConverter = new EnumToStringConverter<LogType>();
+
+            builder
+                 .Entity<Log>()
+                 .Property(e => e.LogType)
+                 .HasConversion(logTypeConverter);
+
             // User roles
             builder.Entity<ApplicationUser>(b =>
             {
