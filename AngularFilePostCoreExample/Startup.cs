@@ -3,6 +3,7 @@ using AngularFilePostCoreExample.Data;
 using AngularFilePostCoreExample.Interfaces;
 using AngularFilePostCoreExample.Logger;
 using AngularFilePostCoreExample.Models;
+using AngularFilePostCoreExample.Repositories;
 using AngularFilePostCoreExample.ViewModels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -37,6 +38,11 @@ namespace AngularFilePostCoreExample
 
             // get app settings
             IConfigurationSection appSettingsSection = Configuration.GetSection("AppSettings");
+            //logger:
+            services.AddLogging();
+            //logger repo.
+            services.AddScoped<ILog, LogRepository>();
+            services.AddSingleton<ILogger, SqliteLogger>();
             // configure DI for application services
             services.Configure<AppSettings>(appSettingsSection);
 
@@ -88,25 +94,41 @@ namespace AngularFilePostCoreExample
             {
                 c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
             });
+
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ILog logRepository)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-            // here is our CustomLogger
-            loggerFactory.AddProvider(new SqliteLoggerProvider(new SqliteLoggerConfiguration
-            {
-                LogLevel = LogLevel.Information,
-                Color = ConsoleColor.Blue
-            }));
 
-            loggerFactory.AddProvider(new SqliteLoggerProvider(new SqliteLoggerConfiguration
-            {
-                LogLevel = LogLevel.Debug,
-                Color = ConsoleColor.Gray
-            }));
+            // add custom logger.
+            loggerFactory.AddProvider(new SqliteLogProvider(logRepository));
+
+            //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            //loggerFactory.AddDebug();
+          
+            ////loggerFactory.AddProvider(new SqliteLoggerProvider(new SqliteLoggerConfiguration()));
+
+            ////loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+
+
+            //loggerFactory.AddDebug();
+            // here is our CustomLogger
+
+            //loggerFactory.AddSqliteConsoleLogger(c => {
+            //    c.LogLevel = LogLevel.Information;
+            //} );
+
+            //loggerFactory.AddSqliteConsoleLogger(c => {
+            //    c.LogLevel = LogLevel.Debug;
+            //});
+
+            //loggerFactory.AddSqliteConsoleLogger(c => {
+            //    c.LogLevel = LogLevel.Error;
+            //});
+
+
 
             if (env.IsDevelopment())
             {
@@ -149,5 +171,19 @@ namespace AngularFilePostCoreExample
                 }
             });
         }
+
+
+        //private IServiceProvider ConfigureLogging(IServiceCollection services)
+        //{
+
+        //    //services.AddTransient<ISomeDependency, SomeDependency>();
+        //    services.AddSingleton<ILogger, SqliteLogger>();
+        //    IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        //    var loggerFactory = new LoggerFactory();
+        //    loggerFactory.AddProvider(new SqliteLogProvider(new SqliteLoggerConfiguration(), serviceProvider));
+
+        //    return serviceProvider;
+        //}
     }
 }

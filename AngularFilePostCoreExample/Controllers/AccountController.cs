@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static AngularFilePostCoreExample.Models.CustomEnums;
@@ -29,9 +30,11 @@ namespace AngularFilePostCoreExample.Controllers
         private readonly IConverter<RegisterUserViewModel, ApplicationUser> _registerConverter;
         private readonly AppSettings _appSettings;
        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ILogger _logger;
 
         public AccountController(IServiceProvider serviceProvider)
         {
+            _logger = serviceProvider.GetRequiredService<ILogger<AccountController>>();
             _userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             _roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             _userConverter = serviceProvider.GetRequiredService<IConverter<UserViewModel, ApplicationUser>>();
@@ -119,6 +122,7 @@ namespace AngularFilePostCoreExample.Controllers
         [Route("Users")]
         public IEnumerable<UserViewModel> Get()
         {
+            _logger.LogInformation("Get Users");
             try
             {
                 List<UserViewModel> users = _userManager.Users.Include(u => u.UserRoles).ThenInclude(r => r.Role).Select(u=> _userConverter.Convert(u)).ToList();

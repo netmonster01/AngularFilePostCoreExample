@@ -21,7 +21,7 @@ namespace AngularFilePostCoreExample.Data
         }
 
         public DbSet<Log> Logs { get; set; }
-
+        public DbSet<EventLog> EventLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

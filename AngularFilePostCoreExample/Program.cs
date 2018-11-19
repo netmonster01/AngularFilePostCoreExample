@@ -23,7 +23,7 @@ namespace AngularFilePostCoreExample
                 var context = services.GetRequiredService<ApplicationDbContext>();
                 try
                 {
-                    SeedRolesAsync(services.GetRequiredService<RoleManager<ApplicationRole>>());
+                   // SeedRolesAsync(services.GetRequiredService<RoleManager<ApplicationRole>>());
                     //SeedData.InitializeAsync(services);
                 }
                 catch (Exception ex)
