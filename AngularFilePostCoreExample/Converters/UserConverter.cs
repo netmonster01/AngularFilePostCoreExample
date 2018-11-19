@@ -2,7 +2,6 @@
 using AngularFilePostCoreExample.ViewModels;
 using AngularFilePostCoreExample.Models;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;

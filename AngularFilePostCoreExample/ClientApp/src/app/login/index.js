@@ -3,5 +3,6 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(require("./register-user"));
+__export(require("./register/register.component"));
+__export(require("./sign-in/sign-in.component"));
 //# sourceMappingURL=index.js.map

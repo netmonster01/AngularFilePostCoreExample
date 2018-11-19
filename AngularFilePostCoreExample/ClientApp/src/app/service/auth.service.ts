@@ -3,12 +3,50 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RegisterUser, User } from '../models';
 import { Observable } from 'rxjs/Observable';
 
+import { BehaviorSubject } from 'rxjs';
+
+export const ANONYMOUS_USER: User = {
+  password: null,
+  email: null,
+  id: null,
+  roles: [],
+  avatarImage: null,
+  firstName: null,
+  lastName: null,
+  isAdmim: false,
+  token: null,
+  userName: null
+};
+
 @Injectable({
   providedIn: 'root'
 })
+
 export class AuthService {
 
+  private subject = new BehaviorSubject<User>(ANONYMOUS_USER);
+
+  user$: Observable<User> = this.subject.asObservable();
+
+  isLoggedIn$: Observable<boolean> = this.user$.map(user => !!user.id);
+
+  isLoggedOut$: Observable<boolean> = this.isLoggedIn$.map(isLoggedIn => !isLoggedIn);
+  storagekey = 'loggedInUser';
+
+  headers: HttpHeaders = new HttpHeaders({ 'Content-Type': 'application/json; charset=utf-8' });
+
+  options = {
+    headers: this.headers
+  };
+
   constructor(private http: HttpClient) {}
+
+  
+  login(email: string, password: string) {
+    // set options
+
+    return this.http.post<User>('/api/Account/Login', { email, password }, this.options).shareReplay().do(user => console.log(user));
+  }
 
   register(newUser: RegisterUser) {
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.Logging;
 using System;
 using static AngularFilePostCoreExample.Models.CustomEnums;
 
@@ -26,7 +27,7 @@ namespace AngularFilePostCoreExample.Data
             base.OnModelCreating(builder);
 
             // enum to string.
-            EnumToStringConverter<LogType> logTypeConverter = new EnumToStringConverter<LogType>();
+            EnumToStringConverter<LogLevel> logTypeConverter = new EnumToStringConverter<LogLevel>();
 
             builder
                  .Entity<Log>()

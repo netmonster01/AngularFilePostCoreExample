@@ -12,7 +12,7 @@ export class FetchDataComponent {
     
   public forecasts: WeatherForecast[];
 
-  users: User[] = [];
+  users: User[];
 
   constructor(private auth: AuthService) {
     this.getUsers();

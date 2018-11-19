@@ -1,17 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using static AngularFilePostCoreExample.Models.CustomEnums;
 
 namespace AngularFilePostCoreExample.Models
 {
     public class Log
     {
+        public Log(LogLevel level, string message, string userId, string source)
+        {
+            LogType = level;
+            Message = message;
+            UserId = userId;
+            Source = source;
+        }
+        public Log(){}
         [Key]
         public int LogId { get; set; }
-        public LogType LogType { get; set; }
+        public LogLevel LogType { get; set; }
         public string Message { get; set; }
         public string UserId { get; set; }
         public string Source { get; set; }
@@ -20,6 +26,7 @@ namespace AngularFilePostCoreExample.Models
         public bool Checked
         {
             get; set;
+            
         }
     }
 }

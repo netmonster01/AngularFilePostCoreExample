@@ -1,24 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../service';
+import { AuthService } from '../../service';
 import { Observable } from 'rxjs/Observable';
-import { RegisterUser } from '../models';
+import { RegisterUser } from '../../models';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
 })
-export class HomeComponent implements OnInit {
+export class RegisterComponent implements OnInit {
 
-  user: RegisterUser = {};
-
-  constructor(private authService: AuthService) {
- 
-  }
-
+  user: RegisterUser;
   didCreate = false;
+  imageSrc = '/assets/uploadIcon.png';
 
-  imageSrc  = '/assets/uploadIcon.png';
+  constructor(private authService: AuthService) { }
 
   ngOnInit() {
   }

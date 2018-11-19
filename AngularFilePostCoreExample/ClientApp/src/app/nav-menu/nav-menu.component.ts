@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { AuthService, ANONYMOUS_USER } from '../service';
+import { Observable } from 'rxjs/Observable';
+import { User } from '../models';
 
 @Component({
   selector: 'app-nav-menu',
@@ -7,6 +10,11 @@ import { Component } from '@angular/core';
 })
 export class NavMenuComponent {
   isExpanded = false;
+  isAuthenticated = false;
+
+  user: User = ANONYMOUS_USER;
+
+  constructor(private auth: AuthService) { }
 
   collapse() {
     this.isExpanded = false;

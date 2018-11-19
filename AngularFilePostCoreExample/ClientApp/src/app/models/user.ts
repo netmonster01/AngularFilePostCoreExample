@@ -1,4 +1,5 @@
-export class User {
+export interface User {
+  id: number;
   email: string;
   userName: string;
   password: string;
@@ -6,4 +7,6 @@ export class User {
   lastName: string;
   avatarImage: string;
   roles: string[];
+  token: string;
+  isAdmim: boolean;
 }

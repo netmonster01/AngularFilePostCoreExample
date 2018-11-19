@@ -13,6 +13,7 @@ import 'rxjs/add/operator/shareReplay';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
+import { RegisterComponent, SignInComponent } from './login';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,9 @@ import 'rxjs/add/operator/catch';
     NavMenuComponent,
     HomeComponent,
     CounterComponent,
-    FetchDataComponent ],
+    FetchDataComponent,
+    RegisterComponent,
+    SignInComponent ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
@@ -29,6 +32,8 @@ import 'rxjs/add/operator/catch';
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'counter', component: CounterComponent },
       { path: 'fetch-data', component: FetchDataComponent },
+      { path: 'register', component: RegisterComponent },
+      { path: 'signin', component: SignInComponent },
     ])
   ],
   providers: [AuthService],

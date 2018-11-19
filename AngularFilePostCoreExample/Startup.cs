@@ -1,17 +1,24 @@
 using AngularFilePostCoreExample.Converters;
 using AngularFilePostCoreExample.Data;
 using AngularFilePostCoreExample.Interfaces;
+using AngularFilePostCoreExample.Logger;
 using AngularFilePostCoreExample.Models;
 using AngularFilePostCoreExample.ViewModels;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
+using System.Text;
 
 namespace AngularFilePostCoreExample
 {
@@ -28,9 +35,17 @@ namespace AngularFilePostCoreExample
         public void ConfigureServices(IServiceCollection services)
         {
 
+            // get app settings
+            IConfigurationSection appSettingsSection = Configuration.GetSection("AppSettings");
+            // configure DI for application services
+            services.Configure<AppSettings>(appSettingsSection);
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             // add our custom converter.services.AddScoped<IConverter<Vote, VoteDto>, VoteConverter>();
             services.AddScoped<IConverter<RegisterUserViewModel, ApplicationUser>, ApplicationUserConverter>();
             services.AddScoped<IConverter<UserViewModel, ApplicationUser>, UserConverter>();
+
             // set up database
             services.AddDbContext<ApplicationDbContext>(options =>
                             options.UseSqlite(Configuration.GetConnectionString("IdentityConnection")), ServiceLifetime.Transient);
@@ -41,6 +56,25 @@ namespace AngularFilePostCoreExample
             .AddDefaultUI()
             .AddDefaultTokenProviders();
 
+            // configure jwt authentication
+            AppSettings appSettings = appSettingsSection.Get<AppSettings>();
+            byte[] securityKey = Encoding.UTF8.GetBytes(appSettings.Secret);
+            SymmetricSecurityKey signingKey = new SymmetricSecurityKey(securityKey);
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidAudience = appSettings.Audience,
+                    ValidIssuer = appSettings.Issuer,
+                    IssuerSigningKey = signingKey,
+                    ClockSkew = TimeSpan.FromMinutes(5)
+                };
+            });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // In production, the Angular files will be served from this directory
@@ -57,8 +91,23 @@ namespace AngularFilePostCoreExample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
+            // here is our CustomLogger
+            loggerFactory.AddProvider(new SqliteLoggerProvider(new SqliteLoggerConfiguration
+            {
+                LogLevel = LogLevel.Information,
+                Color = ConsoleColor.Blue
+            }));
+
+            loggerFactory.AddProvider(new SqliteLoggerProvider(new SqliteLoggerConfiguration
+            {
+                LogLevel = LogLevel.Debug,
+                Color = ConsoleColor.Gray
+            }));
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
