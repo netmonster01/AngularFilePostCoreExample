@@ -204,7 +204,7 @@ namespace AngularFilePostCoreExample.Controllers
                 var token = new JwtSecurityToken(
                     issuer: _appSettings.Issuer, //"netmon.in",
                     audience: _appSettings.Audience, // "readers",
-                    expires: DateTime.Now.AddHours(7),
+                    expires: DateTime.Now.AddHours(_appSettings.ExpireTime),
                     signingCredentials: signingCredentials,
                     claims: claims
                     );
