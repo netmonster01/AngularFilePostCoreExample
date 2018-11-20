@@ -11,46 +11,13 @@ namespace AngularFilePostCoreExample.Converters
     public class ApplicationUserConverter : IConverter<RegisterUserViewModel, ApplicationUser>
     {
         private readonly ILogger _logger;
+
         public ApplicationUserConverter(ILogger logger)
         {
             _logger = logger;
             _logger.ForContext<ApplicationUserConverter>();
         }
 
-        //public async Task<ApplicationUser> ConvertAsync(RegisterUserViewModel source_object)
-        //{
-        //    if (source_object == null)
-        //    { return null; }
-
-        //    try
-        //    {
-        //        ApplicationUser user = new ApplicationUser
-        //        {
-        //            Email = source_object.Email,
-        //            FirstName = source_object.FirstName,
-        //            LastName = source_object.LastName,
-        //            UserName = source_object.UserName
-        //        };
-
-        //        // add image if it exists.
-        //        using (var memoryStream = new MemoryStream())
-        //        {
-        //            await source_object.AvatarImage.CopyToAsync(memoryStream);
-        //            user.AvatarImage = memoryStream.ToArray();
-        //        }
-        //        return user;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return null;
-        //    }
-
-        //}
-
-        //public RegisterUserViewModel Convert(ApplicationUser source_object)
-        //{
-        //    throw new NotImplementedException();
-        //}
         public ApplicationUser Convert(RegisterUserViewModel source_object)
         {
             return null;
@@ -58,6 +25,7 @@ namespace AngularFilePostCoreExample.Converters
 
         public RegisterUserViewModel Convert(ApplicationUser source_object)
         {
+            _logger.Warning("{class} {method} Called but its not implemented.", nameof(ApplicationUserConverter), nameof(Convert));
             return null;
         }
 

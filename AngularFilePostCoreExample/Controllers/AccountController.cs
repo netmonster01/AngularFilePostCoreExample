@@ -31,34 +31,36 @@ namespace AngularFilePostCoreExample.Controllers
         private readonly AppSettings _appSettings;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
-        public AccountController(IServiceProvider serviceProvider, ILogger logger)
+
+        public AccountController(IServiceProvider serviceProvider)
         {
-            _logger = logger.ForContext<AccountController> ();
             _userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             _roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             _userConverter = serviceProvider.GetRequiredService<IConverter<UserViewModel, ApplicationUser>>();
             _registerConverter = serviceProvider.GetRequiredService<IConverter<RegisterUserViewModel, ApplicationUser>>();
             _appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             _signInManager = serviceProvider.GetRequiredService<SignInManager<ApplicationUser>>();
+            _logger = serviceProvider.GetRequiredService<ILogger>();
+            _logger.ForContext<AccountController>();
 
         }
-        //[HttpPost]
-        //[Route("Login")]
-        //[AllowAnonymous]
-        //public async Task<UserDto> Login([FromBody] LoginDto model)
-        //{
-        //    var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
 
-        //    if (result.Succeeded)
-        //    {
-        //        var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-        //        //_loggerRepository.Write(LogType.Pass, string.Format("User: {0} Logged In.", appUser.UserName));
-        //        return await GenerateJwtToken(model.Email, appUser);
-        //    }
+        [HttpPost]
+        [Route("Login")]
+        [AllowAnonymous]
+        public async Task<UserViewModel> Login([FromBody] UserViewModel model)
+        {
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
 
-        //    //_loggerRepository.Write(LogType.Fail, string.Format("User: {0} Failed to Log In.", model.Email));
-        //    throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
-        //}
+            if (result.Succeeded)
+            {
+                var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
+                return await GenerateJwtToken(model.Email, appUser);
+            }
+
+            _logger.Error(new ApplicationException("INVALID_LOGIN_ATTEMPT"),"Login Error:");
+            throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
+        }
 
         [HttpGet]
         [Route("IsAuthenticated")]
@@ -163,76 +165,70 @@ namespace AngularFilePostCoreExample.Controllers
             {
                 UserName = appUser.UserName
             };
-
-            var claims = new List<Claim>
+            try
             {
-                new Claim(JwtRegisteredClaimNames.Sub, email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, email)
-            };
+                var claims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, email),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, email)
+                };
 
-            // get the users roles.
-            var roles = await _userManager.GetRolesAsync(appUser);
-            var u = await _userManager.FindByEmailAsync(appUser.UserName);
-            if (u != null)
-            {
-                user.FirstName = u.FirstName;
-                user.LastName = u.LastName;
+                // get the users roles.
+                var roles = await _userManager.GetRolesAsync(appUser);
+                var u = await _userManager.FindByEmailAsync(appUser.UserName);
+                if (u != null)
+                {
+                    user.FirstName = u.FirstName;
+                    user.LastName = u.LastName;
+                }
+
+                if (roles.Any())
+                {
+                    claims.AddRange(roles.Select(role => new Claim("Role", role)));
+                    user.Roles = roles.ToList();
+                    user.IsAdmin = roles.Contains("Admin");
+                }
+
+                //security key
+                var securityKey = Encoding.UTF8.GetBytes(_appSettings.Secret);
+
+                // SymmetricSecurityKey
+                var symetricSecurityKey = new SymmetricSecurityKey(securityKey);
+
+                // Signing Credentials
+                var signingCredentials = new SigningCredentials(symetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
+
+                // Create Token
+                var token = new JwtSecurityToken(
+                    issuer: _appSettings.Issuer, //"netmon.in",
+                    audience: _appSettings.Audience, // "readers",
+                    expires: DateTime.Now.AddHours(7),
+                    signingCredentials: signingCredentials,
+                    claims: claims
+                    );
+
+                var sToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+                user.Token = sToken;
+                user.Email = appUser.UserName;
+
+                user.Password = null;
+
+                if (appUser.AvatarImage != null && appUser.AvatarImage.Length > 0)
+                {
+                    user.AvatarImage = Convert.ToBase64String(appUser.AvatarImage);
+                }
+                user.Id = appUser.Id;
+                _logger.Information("User {user} passed Authentication.", user);
+
+                return user;
             }
-            if (!string.IsNullOrWhiteSpace(user.FirstName))
+            catch (Exception ex)
             {
-                //            ((ClaimsIdentity)principal.Identity).AddClaims(new[] {
-                //    new Claim(ClaimTypes.GivenName, user.FirstName)
-                //});
+                _logger.Error(ex, "Failed to authenticate user {user}", user);
+                return null;
             }
-
-            if (!string.IsNullOrWhiteSpace(user.LastName))
-            {
-                //            ((ClaimsIdentity)principal.Identity).AddClaims(new[] {
-                //     new Claim(ClaimTypes.Surname, user.LastName),
-                //});
-            }
-            if (roles.Any())
-            {
-                claims.AddRange(roles.Select(role => new Claim("Role", role)));
-                user.Roles = roles.ToList();
-                user.IsAdmin = roles.Contains("Admin");
-            }
-
-            //security key
-            var securityKey = Encoding.UTF8.GetBytes(_appSettings.Secret);//  Encoding.ASCII.GetBytes(_appSettings.Secret);
-            //var signingKey = new SymmetricSecurityKey(securityKey);
-
-            // SymmetricSecurityKey
-            var symetricSecurityKey = new SymmetricSecurityKey(securityKey);
-
-            // Signing Credentials
-            var signingCredentials = new SigningCredentials(symetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
-
-            // Create Token
-            var token = new JwtSecurityToken(
-                issuer: _appSettings.Issuer, //"netmon.in",
-                audience: _appSettings.Audience, // "readers",
-                expires: DateTime.Now.AddHours(7),
-                signingCredentials: signingCredentials,
-                claims: claims
-                );
-
-            var sToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-            user.Token = sToken;
-            user.Email = appUser.UserName;
-
-            user.Password = null;
-
-            if (appUser.AvatarImage != null && appUser.AvatarImage.Length > 0)
-            {
-                user.AvatarImage = Convert.ToBase64String(appUser.AvatarImage);
-            }
-            user.Id = appUser.Id;
-            //_loggerRepository.Write(LogType.Pass, string.Format("Generated Token {0} for User: {1} Registered.", user.Token, user.Email));
-            return user;
-
         }
     }
 }
