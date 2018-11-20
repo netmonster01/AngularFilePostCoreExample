@@ -5,13 +5,18 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using Serilog;
 
 namespace AngularFilePostCoreExample.Converters
 {
     public class UserConverter : IConverter<UserViewModel, ApplicationUser>
     {
-        public UserConverter()
+        private ILogger _logger;
+        public UserConverter(ILogger logger)
         {
+            _logger = logger;
+
+            _logger.ForContext<UserConverter>();
         }
 
         public ApplicationUser Convert(UserViewModel source_object)
@@ -56,6 +61,7 @@ namespace AngularFilePostCoreExample.Converters
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Failed to Convert User");
                 return null;
             }
         }
@@ -87,6 +93,7 @@ namespace AngularFilePostCoreExample.Converters
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Failed to Convert User");
                 return null;
             }
         }

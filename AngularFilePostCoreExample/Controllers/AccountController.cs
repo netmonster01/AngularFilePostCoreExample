@@ -13,11 +13,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using static AngularFilePostCoreExample.Models.CustomEnums;
-
+using Log = Serilog.Log;
 namespace AngularFilePostCoreExample.Controllers
 {
     [Route("api/[controller]")]
@@ -29,12 +29,11 @@ namespace AngularFilePostCoreExample.Controllers
         private readonly IConverter<UserViewModel, ApplicationUser> _userConverter;
         private readonly IConverter<RegisterUserViewModel, ApplicationUser> _registerConverter;
         private readonly AppSettings _appSettings;
-       private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
-
-        public AccountController(IServiceProvider serviceProvider)
+        public AccountController(IServiceProvider serviceProvider, ILogger logger)
         {
-            _logger = serviceProvider.GetRequiredService<ILogger<AccountController>>();
+            _logger = logger.ForContext<AccountController> ();
             _userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             _roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             _userConverter = serviceProvider.GetRequiredService<IConverter<UserViewModel, ApplicationUser>>();
@@ -112,6 +111,7 @@ namespace AngularFilePostCoreExample.Controllers
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Failed to get Users:");
                 return BadRequest(ex.Message);
             }
 
@@ -122,7 +122,6 @@ namespace AngularFilePostCoreExample.Controllers
         [Route("Users")]
         public IEnumerable<UserViewModel> Get()
         {
-            _logger.LogInformation("Get Users");
             try
             {
                 List<UserViewModel> users = _userManager.Users.Include(u => u.UserRoles).ThenInclude(r => r.Role).Select(u=> _userConverter.Convert(u)).ToList();
@@ -130,9 +129,9 @@ namespace AngularFilePostCoreExample.Controllers
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Failed to get Users:");
                 return null;
-            }
-            
+            } 
         }
 
         [HttpGet]
@@ -146,6 +145,7 @@ namespace AngularFilePostCoreExample.Controllers
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Failed to get Users:");
                 return null;
             }
 

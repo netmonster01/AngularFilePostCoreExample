@@ -1,9 +1,7 @@
 using AngularFilePostCoreExample.Converters;
 using AngularFilePostCoreExample.Data;
 using AngularFilePostCoreExample.Interfaces;
-using AngularFilePostCoreExample.Logger;
 using AngularFilePostCoreExample.Models;
-using AngularFilePostCoreExample.Repositories;
 using AngularFilePostCoreExample.ViewModels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -15,11 +13,13 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+//using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Text;
+using Serilog;
+using AngularFilePostCoreExample.Core;
 
 namespace AngularFilePostCoreExample
 {
@@ -38,11 +38,8 @@ namespace AngularFilePostCoreExample
 
             // get app settings
             IConfigurationSection appSettingsSection = Configuration.GetSection("AppSettings");
-            //logger:
-            services.AddLogging();
-            //logger repo.
-            services.AddScoped<ILog, LogRepository>();
-            services.AddSingleton<ILogger, SqliteLogger>();
+
+            //services.AddSingleton<ILogger, SqliteLogger>();
             // configure DI for application services
             services.Configure<AppSettings>(appSettingsSection);
 
@@ -83,6 +80,8 @@ namespace AngularFilePostCoreExample
             });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            
+
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -95,41 +94,13 @@ namespace AngularFilePostCoreExample
                 c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
             });
 
-           
+            // add logging
+            services.AddSerilogServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ILog logRepository)
-        {
-
-            // add custom logger.
-            loggerFactory.AddProvider(new SqliteLogProvider(logRepository));
-
-            //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            //loggerFactory.AddDebug();
-          
-            ////loggerFactory.AddProvider(new SqliteLoggerProvider(new SqliteLoggerConfiguration()));
-
-            ////loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-
-
-            //loggerFactory.AddDebug();
-            // here is our CustomLogger
-
-            //loggerFactory.AddSqliteConsoleLogger(c => {
-            //    c.LogLevel = LogLevel.Information;
-            //} );
-
-            //loggerFactory.AddSqliteConsoleLogger(c => {
-            //    c.LogLevel = LogLevel.Debug;
-            //});
-
-            //loggerFactory.AddSqliteConsoleLogger(c => {
-            //    c.LogLevel = LogLevel.Error;
-            //});
-
-
-
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        { 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

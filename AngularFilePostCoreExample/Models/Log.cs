@@ -6,27 +6,14 @@ using static AngularFilePostCoreExample.Models.CustomEnums;
 namespace AngularFilePostCoreExample.Models
 {
     public class Log
-    {
-        public Log(LogLevel level, string message, string userId, string source)
-        {
-            LogType = level;
-            Message = message;
-            UserId = userId;
-            Source = source;
-        }
-        public Log(){}
+    {     
         [Key]
-        public int LogId { get; set; }
-        public LogLevel LogType { get; set; }
-        public string Message { get; set; }
-        public string UserId { get; set; }
-        public string Source { get; set; }
-        public DateTime DateCreated { get; set; }
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Level { get; set; }
+        public string Exception { get; set; }
+        public string RenderedMessage { get; set; }
+        public string Properties { get; set; }
 
-        public bool Checked
-        {
-            get; set;
-            
-        }
     }
 }

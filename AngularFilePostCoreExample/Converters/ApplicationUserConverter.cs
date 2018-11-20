@@ -4,13 +4,17 @@ using AngularFilePostCoreExample.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace AngularFilePostCoreExample.Converters
 {
     public class ApplicationUserConverter : IConverter<RegisterUserViewModel, ApplicationUser>
     {
-        public ApplicationUserConverter()
+        private readonly ILogger _logger;
+        public ApplicationUserConverter(ILogger logger)
         {
+            _logger = logger;
+            _logger.ForContext<ApplicationUserConverter>();
         }
 
         //public async Task<ApplicationUser> ConvertAsync(RegisterUserViewModel source_object)
@@ -87,6 +91,7 @@ namespace AngularFilePostCoreExample.Converters
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Failed to Convert user.");
                 return null;
             }
         }
