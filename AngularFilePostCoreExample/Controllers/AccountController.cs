@@ -177,6 +177,7 @@ namespace AngularFilePostCoreExample.Controllers
                 // get the users roles.
                 var roles = await _userManager.GetRolesAsync(appUser);
                 var u = await _userManager.FindByEmailAsync(appUser.UserName);
+
                 if (u != null)
                 {
                     user.FirstName = u.FirstName;
